@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulación: Algoritmos Avaros - La mejor decisión de este momento</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.5; color: #222; }
+    h1, h2, h3 { color: #1a365d; }
+    .panel { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 6px; background: #f9f9f9; }
+    .cartas-contenedor { display: flex; gap: 12px; flex-wrap: wrap; margin: 10px 0; }
+    .carta { border: 2px solid #2b6cb0; border-radius: 8px; padding: 10px; width: 150px; background: #fff; }
+    .carta.elegida { border-color: #2f855a; background: #f0fff4; }
+    .carta.descartada { border-color: #c53030; background: #fff5f5; opacity: 0.7; }
+    button { padding: 8px 14px; margin-right: 8px; cursor: pointer; background: #2b6cb0; color: #fff; border: none; border-radius: 4px; }
+    button:disabled { background: #a0aec0; cursor: not-allowed; }
+    input, select { padding: 6px; margin-right: 8px; margin-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; }
+    th, td { border: 1px solid #cbd5e0; padding: 8px; text-align: left; }
+    th { background: #edf2f7; }
+  </style>
+</head>
+<body>
+
+  <h1>Taller de Análisis de Algoritmos: Algoritmos Avaros</h1>
+  <p><strong>Escenario:</strong> La mejor decisión de este momento — Armar un menú con presupuesto limitado.</p>
+
+  <!-- 1. Historia breve, materiales, roles y reglas -->
+  <div class="panel">
+    <h2>1. Escenario de Clase y Reglas de la Dinámica</h2>
+    <p><strong>Historia breve:</strong> Un grupo en la universidad debe armar un menú con presupuesto limitado tomando en cada paso la mejor decisión local disponible sin revisar todas las posibilidades desde cero.</p>
+    <p><strong>Materiales representados:</strong> Cartas o fichas virtuales que representan la lista de candidatos del menú con su respectivo costo y beneficio asignado.</p>
+    <p><strong>Roles del grupo (3 integrantes):</strong> Coordinación, Desarrollo técnico, Documentación, Pruebas y Exposición.</p>
+    <p><strong>Reglas y condición para terminar:</strong> En cada paso se aplica la regla de selección para escoger el mejor candidato local disponible que no supere el presupuesto restante. No se permiten retrocesos. La ronda termina cuando el presupuesto no alcanza para ningún candidato disponible o no quedan candidatos.</p>
+  </div>
+
+  <!-- 2. Preparación y Configuración del Escenario -->
+  <div class="panel">
+    <h2>2. Preparación de Materiales y Variación del Escenario</h2>
+    <div>
+      <label><strong>Versión del escenario (Ronda):</strong></label>
+      <select id="versionEscenario">
+        <option value="Version 1 (Caso donde la regla funciona bien)">Ronda 1: Versión donde la regla funciona bien</option>
+        <option value="Version 2 (Caso con solucion discutible)">Ronda 2: Variación donde produce una solución discutible</option>
+      </select>
+      <label><strong>Presupuesto limitado:</strong></label>
+      <input type="number" id="inputPresupuesto" placeholder="Costo límite" min="1">
+      <label><strong>Regla de selección local:</strong></label>
+      <select id="reglaSeleccion">
+        <option value="beneficio">Mayor beneficio (Priorizar valores altos)</option>
+        <option value="costo">Menor costo inmediato</option>
+      </select>
+      <button onclick="iniciarRonda()">Preparar Ronda</button>
+    </div>
+
+    <hr>
+    <h3>Agregar Carta / Ficha a la Lista de Candidatos</h3>
+    <input type="text" id="nombreCandidato" placeholder="Nombre del candidato (carta)">
+    <input type="number" id="costoCandidato" placeholder="Costo" min="1">
+    <input type="number" id="beneficioCandidato" placeholder="Beneficio / Valor" min="1">
+    <button onclick="agregarCandidato()">Agregar Candidato</button>
+    <button onclick="limpiarCandidatos()">Reiniciar Lista de Candidatos</button>
+  </div>
+
+  <!-- 3. Tablero de Simulación Paso a Paso -->
+  <div class="panel">
+    <h2>3. Tablero de Ejecución Paso a Paso</h2>
+    <p>
+      <strong>Presupuesto disponible:</strong> <span id="presupuestoActual">0</span> |
+      <strong>Costo acumulado:</strong> <span id="costoAcumulado">0</span> |
+      <strong>Beneficio acumulado:</strong> <span id="beneficioAcumulado">0</span> |
+      <strong>Paso actual:</strong> <span id="pasoActual">0</span>
+    </p>
+    <button id="btnPaso" onclick="ejecutarPasoAvaro()" disabled>Ejecutar siguiente paso (Mejor decisión local)</button>
+    <button id="btnGuardar" onclick="guardarEnTabla()" disabled>Registrar resultado en la Tabla de Ejecución</button>
+
+    <h3>Lista de Candidatos (Cartas / Fichas en Mesa)</h3>
+    <div id="contenedorCartas" class="cartas-contenedor"></div>
+
+    <h3>Registro de Decisiones Paso a Paso</h3>
+    <ul id="listaDecisiones"></ul>
+  </div>
+
+  <!-- 4. Tabla de Ejecución y Comparación -->
+  <div class="panel">
+    <h2>4. Tabla de Ejecución entre Escenarios</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Escenario / Versión</th>
+          <th>Lista de candidatos y Regla de selección</th>
+          <th>Decisiones observadas (Paso a paso)</th>
+          <th>Resultado obtenido</th>
+          <th>Aprendizaje / Observación del grupo</th>
+        </tr>
+      </thead>
+      <tbody id="tablaResultados"></tbody>
+    </table>
+  </div>
+
+  <!-- 5. Cierre Reflexivo -->
+  <div class="panel">
+    <h2>5. Cierre Reflexivo (Tres preguntas para otro grupo)</h2>
+    <ol>
+      <li>¿Qué decisiones tomó el algoritmo paso a paso y qué cambió cuando se modificó el escenario en la segunda versión?</li>
+      <li>¿En qué momento de la variación del escenario elegir la mejor decisión local disponible produjo una solución discutible?</li>
+      <li>Con base en la experiencia desarrollada, ¿cuándo conviene aplicar la técnica de algoritmos avaros y qué límites aparecieron en la dinámica?</li>
+    </ol>
+  </div>
+
+  <script>
+    let candidatos = [];
+    let presupuesto = 0;
+    let costoTotal = 0;
+    let beneficioTotal = 0;
+    let paso = 0;
+    let historialPasos = [];
+
+    function agregarCandidato() {
+      const nombre = document.getElementById('nombreCandidato').value.trim();
+      const costo = Number(document.getElementById('costoCandidato').value);
+      const beneficio = Number(document.getElementById('beneficioCandidato').value);
+      if (!nombre || costo <= 0 || beneficio <= 0) return;
+
+      candidatos.push({ nombre, costo, beneficio, estado: 'disponible' });
+      document.getElementById('nombreCandidato').value = '';
+      document.getElementById('costoCandidato').value = '';
+      document.getElementById('beneficioCandidato').value = '';
+      renderizarCartas();
+    }
+
+    function limpiarCandidatos() {
+      candidatos = [];
+      renderizarCartas();
+    }
+
+    function iniciarRonda() {
+      presupuesto = Number(document.getElementById('inputPresupuesto').value);
+      if (presupuesto <= 0 || candidatos.length === 0) return;
+
+      costoTotal = 0;
+      beneficioTotal = 0;
+      paso = 0;
+      historialPasos = [];
+      candidatos.forEach(c => c.estado = 'disponible');
+
+      document.getElementById('listaDecisiones').innerHTML = '';
+      document.getElementById('btnPaso').disabled = false;
+      document.getElementById('btnGuardar').disabled = true;
+      actualizarIndicadores();
+      renderizarCartas();
+    }
+
+    function ejecutarPasoAvaro() {
+      const regla = document.getElementById('reglaSeleccion').value;
+      paso++;
+
+      // Descartar candidatos cuyo costo supere el presupuesto disponible
+      candidatos.forEach(c => {
+        if (c.estado === 'disponible' && c.costo > presupuesto) {
+          c.estado = 'descartada';
+        }
+      });
+
+      const disponibles = candidatos.filter(c => c.estado === 'disponible');
+
+      if (disponibles.length === 0) {
+        registrarDecision(`Paso ${paso}: Condición de finalización alcanzada (no quedan candidatos dentro del presupuesto disponible).`);
+        document.getElementById('btnPaso').disabled = true;
+        document.getElementById('btnGuardar').disabled = false;
+        renderizarCartas();
+        return;
+      }
+
+      // Seleccionar la mejor decisión local disponible según la regla
+      disponibles.sort((a, b) => {
+        if (regla === 'beneficio') return b.beneficio - a.beneficio;
+        return a.costo - b.costo;
+      });
+
+      const elegido = disponibles[0];
+      elegido.estado = 'elegida';
+      presupuesto -= elegido.costo;
+      costoTotal += elegido.costo;
+      beneficioTotal += elegido.beneficio;
+
+      registrarDecision(`Paso ${paso}: Se elige "${elegido.nombre}" (Costo: ${elegido.costo}, Beneficio: ${elegido.beneficio}). Presupuesto restante: ${presupuesto}.`);
+      actualizarIndicadores();
+      renderizarCartas();
+    }
+
+    function registrarDecision(texto) {
+      historialPasos.push(texto);
+      const li = document.createElement('li');
+      li.textContent = texto;
+      document.getElementById('listaDecisiones').appendChild(li);
+    }
+
+    function actualizarIndicadores() {
+      document.getElementById('presupuestoActual').textContent = presupuesto;
+      document.getElementById('costoAcumulado').textContent = costoTotal;
+      document.getElementById('beneficioAcumulado').textContent = beneficioTotal;
+      document.getElementById('pasoActual').textContent = paso;
+    }
+
+    function renderizarCartas() {
+      const contenedor = document.getElementById('contenedorCartas');
+      contenedor.innerHTML = '';
+      candidatos.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'carta ' + (c.estado === 'elegida' ? 'elegida' : c.estado === 'descartada' ? 'descartada' : '');
+        div.innerHTML = `<strong>${c.nombre}</strong><br>Costo: ${c.costo}<br>Beneficio: ${c.beneficio}<br>Estado: ${c.estado}`;
+        contenedor.appendChild(div);
+      });
+    }
+
+    function guardarEnTabla() {
+      const version = document.getElementById('versionEscenario').value;
+      const reglaTexto = document.getElementById('reglaSeleccion').selectedOptions[0].text;
+      const listaTexto = candidatos.map(c => `${c.nombre} (Costo:${c.costo}, Beneficio:${c.beneficio})`).join(', ');
+      const pasosTexto = historialPasos.join(' | ');
+      const resultadoTexto = `Costo total: ${costoTotal}, Beneficio acumulado: ${beneficioTotal}, Presupuesto sobrante: ${presupuesto}`;
+      const aprendizaje = prompt('Ingrese el aprendizaje u observación de esta versión (ej. por qué funcionó bien o por qué produjo una solución discutible):') || '';
+
+      const fila = document.createElement('tr');
+      fila.innerHTML = `
+        <td>${version}</td>
+        <td>Candidatos: ${listaTexto}<br>Regla: ${reglaTexto}</td>
+        <td>${pasosTexto}</td>
+        <td>${resultadoTexto}</td>
+        <td>${aprendizaje}</td>
+      `;
+      document.getElementById('tablaResultados').appendChild(fila);
+      document.getElementById('btnGuardar').disabled = true;
+    }
+  </script>
+</body>
+</html>
